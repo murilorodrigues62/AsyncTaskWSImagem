@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AsyncTaskWSImagem</string>
+<string name="texto_informacao">
+Clique no botão abaixo para preencher a tela com informações adquiridas nos Web Services
+</string>
+    <string name="texto_botao">Acessar Web Services</string>
+    <string name="msg_erro">Erro na recuperação de imagem</string>
+</resources>
