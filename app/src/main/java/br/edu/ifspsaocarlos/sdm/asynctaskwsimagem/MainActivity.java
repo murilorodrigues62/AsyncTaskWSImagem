@@ -12,24 +12,27 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.entity.BufferedHttpEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 
 public class MainActivity extends Activity implements View.OnClickListener {
     private Button btAcessarWs;
     private ProgressBar mProgress;
-    private final String url = "http://cdn28.us1.fansshare.com/photograph/hdwallpapersmoviemobile/ned-stark-game-of-thrones-movie-mobile-wallpaper-174211401.jpg";
+    private java.net.URL url;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        try {
+            url = new java.net.URL("http://cdn28.us1.fansshare.com/photograph/hdwallpapersmoviemobile/ned-stark-game-of-thrones-movie-mobile-wallpaper-174211401.jpg");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
         mProgress = (ProgressBar) findViewById(R.id.pb_carregando);
         btAcessarWs = (Button) findViewById(R.id.bt_acessar_ws);
         btAcessarWs.setOnClickListener(this);
@@ -39,37 +42,37 @@ public class MainActivity extends Activity implements View.OnClickListener {
             buscarImagem(url);
         }
     }
-    private void buscarImagem(String url){
-        AsyncTask<String, Void, Bitmap> tarefa = new AsyncTask<String, Void, Bitmap>() {
+    private void buscarImagem(java.net.URL url){
+        AsyncTask<java.net.URL, Void, Bitmap> tarefa = new AsyncTask<java.net.URL, Void, Bitmap>() {
 
             protected void onPreExecute() {
                 super.onPreExecute();
                 mProgress.setVisibility(View.VISIBLE);
             }
-            protected Bitmap doInBackground(String... params) {
+            protected Bitmap doInBackground(java.net.URL... params) {
 
-                /* Usando as classes do pacote org.apache.http é necessário criar um objeto
-                   HttpGet (ou HttpPost) usando a URL para envio da requisição. */
-                HttpGet httpGet = new HttpGet(params[0]);
-                HttpClient httpClient = new DefaultHttpClient();
+                java.net.URL url = params[0];
                 Bitmap imagem = null;
+
                 try {
-                    // HttpResponse é quem armazena a resposta da requisição enviada.
-                    HttpResponse httpResponse = httpClient.execute(httpGet);
+                     // O pacote org.apache.http foi substituido pelo java.net
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+                    // HttpURLConnection é quem armazena a resposta da requisição enviada.
+                    conn.setRequestMethod("POST");
 
                     // Se a resposta da requisição foi bem sucedida (HTTP 200)
-                    if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                    if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
 
                         // o fluxo de dados da resposta é bufferizado e convertido eu uma imagem
-                        BufferedHttpEntity bufferedHttpEntity =
-                                new BufferedHttpEntity(httpResponse.getEntity());
-                        InputStream inputStream = bufferedHttpEntity.getContent();
+                        InputStream inputStream = new BufferedInputStream(conn.getInputStream());
                         imagem = BitmapFactory.decodeStream(inputStream);
                     }
-                }
-                catch (IOException e) {
+
+                } catch (IOException e) {
                     Log.e((String) getText(R.string.app_name), getString(R.string.msg_erro));
                 }
+
                 return imagem;
             }
             protected void onPostExecute(Bitmap bitmap) {
